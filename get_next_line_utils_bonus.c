@@ -18,8 +18,10 @@ char	*ft_strjoin(const char *s1, const char *s2)
 	size_t	i;
 	size_t	j;
 
-	if (!s1 || !s2)
-		return (NULL);
+	if (!s1)
+		s1 = "";
+	if (!s2)
+		s2 = "";
 	joined = malloc(ft_strlen(s1) + ft_strlen(s2) + 1);
 	if (!joined)
 		return (NULL);
@@ -39,16 +41,6 @@ char	*ft_strjoin(const char *s1, const char *s2)
 	return (joined);
 }
 
-static size_t	calc_sub_len(const char *s, unsigned int start, size_t len)
-{
-	size_t	i;
-
-	i = 0;
-	while (s[start + i] && i < len)
-		i++;
-	return (i);
-}
-
 char	*ft_substr(const char *s, unsigned int start, size_t len)
 {
 	char	*sub;
@@ -59,12 +51,14 @@ char	*ft_substr(const char *s, unsigned int start, size_t len)
 		return (NULL);
 	if (start >= ft_strlen(s))
 		return (ft_strdup(""));
-	sub_len = calc_sub_len(s, start, len);
+	sub_len = 0;
+	while (s[start + sub_len] && sub_len < len)
+		sub_len++;
 	sub = malloc(sub_len + 1);
 	if (!sub)
 		return (NULL);
 	i = 0;
-	while (s[start + i] && i < len)
+	while (i < sub_len)
 	{
 		sub[i] = s[start + i];
 		i++;

@@ -1,63 +1,82 @@
 #include "get_next_line.h"
 
-static char	*read_to_buffer(char *buffer, int *read_ret, int fd, char *tmp)
+static char *set_free(char **ptr)
 {
-	int		index;
-	char	*joined;
+	if (ptr && *ptr)
+	{
+		free(*ptr);
+		*ptr = NULL;
+	}
+	return (NULL);
+}
 
-	*read_ret = read(fd, tmp, BUFFER_SIZE);
-	if (*read_ret <= 0)
-		return (buffer);
-	tmp[*read_ret] = '\0';
-	index = 0;
-	while (tmp[index] && tmp[index] != '\n')
-		index++;
-	joined = ft_strjoin(buffer, tmp);
+static int there_is_a_newline(char *buffer)
+{
+	size_t i;
+
+	i = 0;
+	if (!buffer)
+		return (0);
+	while (buffer[i])
+		if (buffer[i++] == '\n')
+			return (1);
+	return (0);
+}
+
+static char *append_to_buffer(char *buffer, char *tmp)
+{
+	char *joined = ft_strjoin(buffer, tmp);
 	if (!joined)
-		return (NULL);
-	free(buffer);
-	if (tmp[index] == '\n')
-		*read_ret = 0;
+		return (set_free(&buffer));
+	set_free(&buffer);
 	return (joined);
 }
 
-static char	*clean_buffer(char *buffer, int *read_ret, int fd)
+static char *read_until_newline(char *buffer, int *read_ret, int fd)
 {
-	char	tmp[BUFFER_SIZE + 1];
+	char tmp[BUFFER_SIZE + 1];
 
 	*read_ret = 1;
-	while (*read_ret > 0)
+	while (*read_ret > 0 && !there_is_a_newline(buffer))
 	{
-		buffer = read_to_buffer(buffer, read_ret, fd, tmp);
-		if (!buffer || *read_ret == 0)
-			break ;
+		*read_ret = read(fd, tmp, BUFFER_SIZE);
+		if (*read_ret < 0)
+			return (set_free(&buffer));
+		tmp[*read_ret] = '\0';
+		buffer = append_to_buffer(buffer, tmp);
+		if (!buffer)
+			return (NULL);
 	}
 	return (buffer);
 }
 
-static char	*extract_line(char *buffer, char **rest)
+static char *extract_line(char *buffer, char **rest)
 {
-	int		len;
-	char	*line;
+	int len = 0;
+	char *line;
 
-	len = 0;
 	while (buffer[len] && buffer[len] != '\n')
 		len++;
-	if (buffer[len] == '\n')
-		len++;
-	line = ft_substr(buffer, 0, len);
+	line = ft_substr(buffer, 0, len + (buffer[len] == '\n'));
 	if (!line)
 		return (NULL);
-	*rest = ft_strdup(buffer + len);
-	free(buffer);
+	if (buffer[len] == '\n')
+	{
+		*rest = ft_strdup(buffer + len + 1);
+		if (!*rest)
+			return (set_free(&line));
+	}
+	else
+		*rest = NULL;
+	set_free(&buffer);
 	return (line);
 }
 
-char	*get_next_line(int fd)
+char *get_next_line(int fd)
 {
-	static char	*stock;
-	char		*line;
-	int			ret;
+	static char *stock = NULL;
+	char *line, *rest;
+	int ret;
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
@@ -68,13 +87,14 @@ char	*get_next_line(int fd)
 			return (NULL);
 		stock[0] = '\0';
 	}
-	stock = clean_buffer(stock, &ret, fd);
-	if (!stock || ret < 0 || !*stock)
-	{
-		free(stock);
-		stock = NULL;
-		return (NULL);
-	}
-	line = extract_line(stock, &stock);
+	ret = 0;
+	stock = read_until_newline(stock, &ret, fd);
+	if (ret < 0 || !stock || stock[0] == '\0')
+		return (set_free(&stock));
+	rest = NULL;
+	line = extract_line(stock, &rest);
+	if (!line)
+		return (set_free(&stock), set_free(&rest));
+	stock = rest;
 	return (line);
 }

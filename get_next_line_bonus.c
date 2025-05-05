@@ -1,65 +1,87 @@
 #include "get_next_line_bonus.h"
-#include <limits.h> // pour OPEN_MAX
+#include <limits.h>  // pour OPEN_MAX
 
-static char	*read_to_buffer(char *buffer, int *read_ret, int fd, char *tmp)
+// Libère un pointeur et le met à NULL
+static char *set_free(char **ptr)
 {
-	int		index;
-	char	*joined;
+	if (ptr && *ptr)
+	{
+		free(*ptr);
+		*ptr = NULL;
+	}
+	return (NULL);
+}
+
+// Fonction qui lit et concatène les données dans buffer, et détecte '\n'
+static char *read_to_buffer(char *buffer, int *read_ret, int fd, char *tmp)
+{
+	int i;
+	char *joined;
 
 	*read_ret = read(fd, tmp, BUFFER_SIZE);
-	if (*read_ret <= 0)
+	if (*read_ret < 0)
+		return (set_free(&buffer));
+	if (*read_ret == 0)
 		return (buffer);
 	tmp[*read_ret] = '\0';
-	index = 0;
-	while (tmp[index] && tmp[index] != '\n')
-		index++;
+	i = 0;
+	while (tmp[i])
+	{
+		if (tmp[i] == '\n')
+			*read_ret = 0;
+		i++;
+	}
 	joined = ft_strjoin(buffer, tmp);
-	free(buffer);
 	if (!joined)
-		return (NULL);
-	if (tmp[index] == '\n')
-		*read_ret = 0;
+		return (set_free(&buffer));
+	set_free(&buffer);
 	return (joined);
 }
 
-static char	*clean_buffer(char *buffer, int *read_ret, int fd)
+// Fonction qui nettoie le buffer et attend une nouvelle ligne ou la fin du fichier
+static char *clean_buffer(char *buffer, int *read_ret, int fd)
 {
-	char	tmp[BUFFER_SIZE + 1];
+	char tmp[BUFFER_SIZE + 1];
 
 	*read_ret = 1;
 	while (*read_ret > 0)
 	{
 		buffer = read_to_buffer(buffer, read_ret, fd, tmp);
 		if (!buffer)
-			break ;
+			return (NULL);
+		if (*read_ret == 0)
+			break;
 	}
 	return (buffer);
 }
 
-static char	*extract_line(char *buffer, char **rest)
+// Fonction qui extrait une ligne de buffer et met à jour rest
+static char *extract_line(char *buffer, char **rest)
 {
-	int		len;
-	char	*line;
+	int len;
+	char *line;
 
 	len = 0;
 	while (buffer[len] && buffer[len] != '\n')
 		len++;
 	line = ft_substr(buffer, 0, len + (buffer[len] == '\n'));
 	if (!line)
-		return (NULL);
+		return (set_free(&buffer));
 	if (buffer[len] == '\n')
 		*rest = ft_strdup(buffer + len + 1);
 	else
 		*rest = NULL;
-	free(buffer);
+	set_free(&buffer);
 	return (line);
 }
 
-char	*get_next_line(int fd)
+// Fonction principale bonus qui lit une ligne depuis un fichier
+char *get_next_line(int fd)
 {
-	static char	*stock[1024];
-	char		*line;
-	int			ret;
+	static char *stock[1024];
+	char *rest;
+	char *line;
+	int ret;
 
 	if (fd < 0 || BUFFER_SIZE <= 0 || fd >= 1024)
 		return (NULL);
@@ -72,12 +94,10 @@ char	*get_next_line(int fd)
 	}
 	ret = 0;
 	stock[fd] = clean_buffer(stock[fd], &ret, fd);
-	if (!stock[fd] || ret < 0 || stock[fd][0] == '\0')
-	{
-		free(stock[fd]);
-		stock[fd] = NULL;
-		return (NULL);
-	}
-	line = extract_line(stock[fd], &stock[fd]);
+	if (ret < 0 || !stock[fd] || stock[fd][0] == '\0')
+		return (set_free(&stock[fd]));
+	rest = NULL;
+	line = extract_line(stock[fd], &rest);
+	stock[fd] = rest;
 	return (line);
 }

@@ -6,7 +6,7 @@
 #    By: glaurent <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/04/25 00:00:00 by glaurent          #+#    #+#              #
-#    Updated: 2025/04/26 00:00:00 by glaurent         ###   ########.fr        #
+#    Updated: 2025/05/05 16:40:36 by galauren         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,6 +29,7 @@ MAIN = main.c
 MAIN_BONUS = main_bonus.c
 MAIN_OBJ = $(MAIN:.c=.o)
 MAIN_BONUS_OBJ = $(MAIN_BONUS:.c=.o)
+D = 42
 
 all: $(NAME)
 
@@ -39,16 +40,18 @@ bonus: $(OBJ_BONUS)
 	$(AR) $(NAME_BONUS) $(OBJ_BONUS)
 
 test: $(NAME) $(MAIN_OBJ)
-	$(CC) $(CFLAGS) -o $(NAME_TEST) $(MAIN_OBJ) $(NAME)
+	$(CC) $(CFLAGS) -D BUFFER_SIZE=$D -o $(NAME_TEST) $(MAIN_OBJ) $(NAME)
 
 test_bonus: $(NAME_BONUS) $(MAIN_BONUS_OBJ)
-	$(CC) $(CFLAGS) -o $(NAME_TEST_BONUS) $(MAIN_BONUS_OBJ) $(NAME_BONUS)
+	$(CC) $(CFLAGS) -D BUFFER_SIZE=$D -o $(NAME_TEST_BONUS) $(MAIN_BONUS_OBJ) $(NAME_BONUS)
 
 clean:
 	rm -f $(OBJ) $(OBJ_BONUS) $(MAIN_OBJ) $(MAIN_BONUS_OBJ)
 
 fclean: clean
 	rm -f $(NAME) $(NAME_BONUS) $(NAME_TEST) $(NAME_TEST_BONUS)
+
+f: fclean
 
 re: fclean all
 

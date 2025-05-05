@@ -1,18 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: galauren <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/05 16:50:34 by galauren          #+#    #+#             */
+/*   Updated: 2025/05/05 17:03:07 by galauren         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "get_next_line.h"
 
-static char *set_free(char **ptr)
+static int	there_is_a_newline(char *buffer)
 {
-	if (ptr && *ptr)
-	{
-		free(*ptr);
-		*ptr = NULL;
-	}
-	return (NULL);
-}
-
-static int there_is_a_newline(char *buffer)
-{
-	size_t i;
+	size_t	i;
 
 	i = 0;
 	if (!buffer)
@@ -23,18 +25,20 @@ static int there_is_a_newline(char *buffer)
 	return (0);
 }
 
-static char *append_to_buffer(char *buffer, char *tmp)
+static char	*append_to_buffer(char *buffer, char *tmp)
 {
-	char *joined = ft_strjoin(buffer, tmp);
+	char	*joined;
+
+	joined = ft_strjoin(buffer, tmp);
 	if (!joined)
 		return (set_free(&buffer));
 	set_free(&buffer);
 	return (joined);
 }
 
-static char *read_until_newline(char *buffer, int *read_ret, int fd)
+static char	*read_until_newline(char *buffer, int *read_ret, int fd)
 {
-	char tmp[BUFFER_SIZE + 1];
+	char	tmp[BUFFER_SIZE + 1];
 
 	*read_ret = 1;
 	while (*read_ret > 0 && !there_is_a_newline(buffer))
@@ -50,11 +54,12 @@ static char *read_until_newline(char *buffer, int *read_ret, int fd)
 	return (buffer);
 }
 
-static char *extract_line(char *buffer, char **rest)
+static char	*extract_line(char *buffer, char **rest)
 {
-	int len = 0;
-	char *line;
+	int		len;
+	char	*line;
 
+	len = 0;
 	while (buffer[len] && buffer[len] != '\n')
 		len++;
 	line = ft_substr(buffer, 0, len + (buffer[len] == '\n'));
@@ -72,11 +77,12 @@ static char *extract_line(char *buffer, char **rest)
 	return (line);
 }
 
-char *get_next_line(int fd)
+char	*get_next_line(int fd)
 {
-	static char *stock = NULL;
-	char *line, *rest;
-	int ret;
+	static char	*stock = NULL;
+	char		*line;
+	char		*rest;
+	int			ret;
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);

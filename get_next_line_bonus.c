@@ -1,8 +1,18 @@
-#include "get_next_line_bonus.h"
-#include <limits.h>  // pour OPEN_MAX
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: galauren <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/05 16:49:33 by galauren          #+#    #+#             */
+/*   Updated: 2025/05/05 17:01:08 by galauren         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-// Libère un pointeur et le met à NULL
-static char *set_free(char **ptr)
+#include "get_next_line_bonus.h"
+
+static char	*set_free(char **ptr)
 {
 	if (ptr && *ptr)
 	{
@@ -12,11 +22,10 @@ static char *set_free(char **ptr)
 	return (NULL);
 }
 
-// Fonction qui lit et concatène les données dans buffer, et détecte '\n'
-static char *read_to_buffer(char *buffer, int *read_ret, int fd, char *tmp)
+static char	*read_to_buffer(char *buffer, int *read_ret, int fd, char *tmp)
 {
-	int i;
-	char *joined;
+	int		i;
+	char	*joined;
 
 	*read_ret = read(fd, tmp, BUFFER_SIZE);
 	if (*read_ret < 0)
@@ -38,10 +47,9 @@ static char *read_to_buffer(char *buffer, int *read_ret, int fd, char *tmp)
 	return (joined);
 }
 
-// Fonction qui nettoie le buffer et attend une nouvelle ligne ou la fin du fichier
-static char *clean_buffer(char *buffer, int *read_ret, int fd)
+static char	*clean_buffer(char *buffer, int *read_ret, int fd)
 {
-	char tmp[BUFFER_SIZE + 1];
+	char	tmp[BUFFER_SIZE + 1];
 
 	*read_ret = 1;
 	while (*read_ret > 0)
@@ -50,16 +58,15 @@ static char *clean_buffer(char *buffer, int *read_ret, int fd)
 		if (!buffer)
 			return (NULL);
 		if (*read_ret == 0)
-			break;
+			break ;
 	}
 	return (buffer);
 }
 
-// Fonction qui extrait une ligne de buffer et met à jour rest
-static char *extract_line(char *buffer, char **rest)
+static char	*extract_line(char *buffer, char **rest)
 {
-	int len;
-	char *line;
+	int		len;
+	char	*line;
 
 	len = 0;
 	while (buffer[len] && buffer[len] != '\n')
@@ -76,12 +83,12 @@ static char *extract_line(char *buffer, char **rest)
 }
 
 // Fonction principale bonus qui lit une ligne depuis un fichier
-char *get_next_line(int fd)
+char	*get_next_line(int fd)
 {
-	static char *stock[1024];
-	char *rest;
-	char *line;
-	int ret;
+	static char	*stock[1024];
+	char		*rest;
+	char		*line;
+	int			ret;
 
 	if (fd < 0 || BUFFER_SIZE <= 0 || fd >= 1024)
 		return (NULL);

@@ -16,7 +16,7 @@ NAME_TEST = test_gnl
 NAME_TEST_BONUS = test_gnl_bonus
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -g3 -fsanitize=address
 AR = ar rcs
 
 SRC = get_next_line.c get_next_line_utils.c
@@ -42,7 +42,7 @@ bonus: $(OBJ_BONUS)
 test: $(NAME) $(MAIN_OBJ)
 	$(CC) $(CFLAGS) -D BUFFER_SIZE=$D -o $(NAME_TEST) $(MAIN_OBJ) $(NAME)
 
-test_bonus: $(NAME_BONUS) $(MAIN_BONUS_OBJ)
+test_bonus: bonus $(NAME_BONUS) $(MAIN_BONUS_OBJ)
 	$(CC) $(CFLAGS) -D BUFFER_SIZE=$D -o $(NAME_TEST_BONUS) $(MAIN_BONUS_OBJ) $(NAME_BONUS)
 
 clean:

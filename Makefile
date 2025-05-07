@@ -16,7 +16,7 @@ NAME_TEST = test_gnl
 NAME_TEST_BONUS = test_gnl_bonus
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -g3 -fsanitize=address
+CFLAGS = -Wall -Wextra -Werror #-g3 -fsanitize=address
 AR = ar rcs
 
 SRC = get_next_line.c get_next_line_utils.c

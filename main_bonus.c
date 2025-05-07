@@ -33,7 +33,7 @@ int	main(int ac, char **argv)
 {
 	int		fd[1024] = {0};
 	char	fd_eof[1024] = {0};
-	char	line_num[1024] = {0};
+	int		line_num[1024] = {0};
 	char	bg_color[32];
 	char	fg_color[32];
 	char	*line;
@@ -74,11 +74,14 @@ int	main(int ac, char **argv)
 			}
 			printf("\e[31mFD[%4d]|????????|\e[0;41mTERMINATED.\e[0m\n", i);
 		}
-		else
+		else if (!(fd[i] < 0))
 		{
 			get_bg_color(fd[i], bg_color, sizeof(bg_color));
 			get_fg_color(fd[i], fg_color, sizeof(fg_color));
-			printf("%sFD[%4d]|%8d|\e[0m%s%s\e[0m", bg_color, i, ++(line_num[i]), fg_color, line);
+			if (line[ft_strlen(line) - 1] == '\n')
+				printf("%sFD[%4d]|%8d|\e[0m%s%s\e[0m", bg_color, fd[i], ++(line_num[i]), fg_color, line);
+			else
+				printf("%sFD[%4d]|%8d|\e[0m%s%s\e[41m#\e[0m\n", bg_color, fd[i], ++(line_num[i]), fg_color, line);
 			free(line);
 			line = NULL;
 		}
